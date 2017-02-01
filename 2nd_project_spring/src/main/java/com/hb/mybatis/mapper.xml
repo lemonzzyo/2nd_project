@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 쿼리작성해서 db에 보내고 결과 까지 받는 장소 -->
+<mapper namespace="2ndproject_mul">
+	<insert id="p_insert" parameterType="com.hb.mybatis.VO">
+		insert into product_proj values(product_proj_seq.nextval, #{pname}, #{price}, #{price}, #{content}, #{img}, #{subimg}, #{cnt}, 0, sysdate, 'x', #{category}, #{psize})
+	</insert>
+ 	<select id="p_list" resultType="com.hb.mybatis.ProductVO">
+ 		select * from product_proj order by pid
+ 	</select>
+ 	<select id="p_search" resultType="com.hb.mybatis.ProductVO" parameterType="String">
+ 		select * from product_proj where pid=#{pid}
+ 	</select>
+ 	<update id="p_update" parameterType="com.hb.mybatis.ProductVO">
+ 		update product_proj set pname=#{pname}, price=#{price}, saleprice=#{saleprice}, content=#{content}, cnt=#{cnt}, 
+ 		event=#{event}, category=#{category}, psize=#{psize} where pid=#{pid}
+ 	</update>
+ 	<select id="user_list" resultType="com.hb.mybatis.MemberVO">
+ 		select * from member_proj where id!='admin'
+ 	</select>
+ 	<select id="user_search" resultType="com.hb.mybatis.MemberVO" parameterType="String">
+ 		select * from member_proj where id=#{id}
+ 	</select>
+ 	<update id="on_black" parameterType="String">
+ 		update member_proj set black='o' where id=#{id}
+ 	</update>
+ 	<update id="off_black" parameterType="String">
+ 		update member_proj set black='x' where id=#{id}
+ 	</update>
+ 	 <insert id="insertReply" parameterType="com.hb.mybatis.ReplyVO">
+       insert into reply values(#{rcontent}, sysdate, #{eval},#{pid}, #{id} )
+    </insert>
+ 	
+    <!-- 대원이꺼 mapper -->
+    
+ 	<select id="totalCount" resultType="int" parameterType="Map">
+       select count(*) from product_proj
+    </select>
+    <select id="listall" resultType="com.hb.mybatis.ProductVO">
+    	 select * from (
+    	   select rownum r_num, a.* from
+    	      (select * from product_proj) a
+  			)where r_num between #{begin} and #{end}
+    </select>
+	<select id="newlist" resultType="com.hb.mybatis.ProductVO">
+    	select * from product_proj where 3>sysdate-regdate
+    </select>
+    <select id="salelist" resultType="com.hb.mybatis.ProductVO">
+    	select * from product_proj where event ='o'
+    </select>
+    <select id="categorylist" resultType="com.hb.mybatis.ProductVO" parameterType="String">
+    	select * from product_proj where category =#{category}
+    </select>
+    <select id="view" resultType="com.hb.mybatis.ProductVO" parameterType="String">
+    	select * from product_proj where pid=#{pid}
+    </select>
+    <select id="search" resultType="com.hb.mybatis.ProductVO" parameterType="String">
+    	select * from product_proj where Lower(pname) like '%' || #{pname} || '%'
+    </select>
+    <insert id="insertQna" parameterType="com.hb.mybatis.QnaVO">
+    	insert into qna values( qna_group.nextval,#{content}, sysdate, #{chk},#{pid}, #{id},0 )
+    </insert>
+    <insert id="insertReQna" parameterType="com.hb.mybatis.QnaVO">
+    	insert into qna values( qna_group.nextval,#{content}, sysdate, #{chk},#{pid}, #{id},#{admin_num} )
+    </insert>
+    <update id="chk_chg" parameterType="com.hb.mybatis.QnaVO">
+    	update qna set chk='YES' where groups=#{admin_num}
+    </update>
+    <select id="qna_read" parameterType="String" resultType="com.hb.mybatis.QnaVO">
+    	select * from qna where admin_num=#{groups}
+    </select>
+    <select id="qnalist" resultType="com.hb.mybatis.QnaVO">
+    	<!-- select * from qna where pid=#{pid} -->
+    	select * from (
+    	   select rownum r_num, a.* from
+    	      (select * from qna order by groups desc) a
+  			) where pid=#{pid} and id != 'admin'
+    </select>
+    
+    <insert id="replywrite" parameterType="com.hb.mybatis.ReplyVO">
+       insert into reply values(#{rcontent}, sysdate, #{eval},#{pid}, #{id} )
+    </insert>
+    <select id="replylist" resultType="com.hb.mybatis.ReplyVO">
+    	select * from reply
+    </select>
+    
+    
+    
+    <!-- 누나꺼 mapper -->
+    
+	<!-- 이름 중복 체크 -->   
+   	<select id="idchk" parameterType="String" resultType="com.hb.mybatis.MemberVO">
+   		select * from member_proj where id = #{id}
+   	</select>
+    
+    <!-- 회원가입 -->
+    <insert id="memreg" parameterType="com.hb.mybatis.MemberVO">
+    	insert into member_proj values(#{id}, #{pwd}, #{name}, #{phone}, #{birth}, #{email}, #{addr}, 0, 0)
+    </insert>
+    
+    <!-- 로그인 -->
+    <select id="login" parameterType="com.hb.mybatis.MemberVO" resultType="com.hb.mybatis.MemberVO">
+    	select * from member_proj where id=#{id} and pwd=#{pwd}
+    </select>
+    
+    <!-- 회원정보 수정 -->
+    <update id="memupdate" parameterType="com.hb.mybatis.MemberVO">
+    	update member_proj set pwd=#{pwd}, phone=#{phone}, birth=#{birth}, email=#{email}, addr=#{addr} where id=#{id}
+    </update>
+    
+    <!-- 회원탈퇴 -->
+    <delete id="memdel" parameterType="String">
+    	delete from member_proj where id=#{id}
+    </delete>
+    
+    <!-- 아이디 찾기 -->
+    <select id="idfind" parameterType="com.hb.mybatis.MemberVO" resultType="com.hb.mybatis.MemberVO">
+    	select * from member_proj where name=#{name} and phone=#{phone}
+    </select>
+
+    <!-- 비밀번호 찾기 -->
+    <select id="pwdfind" parameterType="com.hb.mybatis.MemberVO" resultType="com.hb.mybatis.MemberVO">
+    	select * from member_proj where id=#{id} and name=#{name} and phone=#{phone}
+    </select>
+    
+    <!-- 장바구니에 담기 -->
+    <insert id="cartadd" parameterType="com.hb.mybatis.CartVO">
+    	insert into cart values(#{pid},#{id},#{cnt},#{psize},${saleprice})
+    </insert>
+    
+    <!-- 장바구니 DB가져오기 -->
+    <select id="cartview" parameterType="String" resultType="com.hb.mybatis.CartVO">
+    	select * from cart where id=#{id} 
+    </select>
+    
+    <!-- 장바구니 선택삭제하기 -->
+	<delete id="cartdel" parameterType="com.hb.mybatis.CartVO">
+		delete from cart where id=#{id} and pid = #{pid}
+	</delete>
+	
+	<!-- 장바구니 전체삭제하기 -->
+	<delete id="cartdelall" parameterType="String">
+		delete from cart where id=#{id}
+	</delete>
+  
+  	<!-- 장바구니에서 아이디/품목별 포인트 정보 가져오기 -->
+    <select id="cartone" parameterType="com.hb.mybatis.CartVO" resultType="com.hb.mybatis.CartVO">
+    	select * from cart where id=#{id} and pid=#{pid} 
+    </select>
+  	
+  	<!-- 회원 포인트 업데이트 -->
+	<update id="mempoint" parameterType="com.hb.mybatis.MemberVO">
+		update member_proj set point = #{point} where id=#{id}
+	</update>
+	
+	<!-- 장바구니 구매 후 상품 수량 업데이트 -->
+	<update id="cartprod_update" parameterType="com.hb.mybatis.ProductVO">
+		update product_proj set salecnt=#{salecnt}, cnt=#{cnt} where pid = #{pid}
+	</update>
+	
+	<!-- 장바구니 수량 업데이트 -->
+	<update id="cartcnt_update" parameterType="com.hb.mybatis.CartVO">
+		update cart set cnt=#{cnt} where id=#{id} and pid = #{pid}
+	</update>
+	
+	<!-- 장바구니 전체구매를 위한 cartlist구하기 -->
+     <select id="cartallbyid" parameterType="String" resultType="com.hb.mybatis.CartVO">
+    	select * from cart where id=#{id} 
+    </select>
+</mapper>
